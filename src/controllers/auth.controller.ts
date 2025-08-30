@@ -43,4 +43,19 @@ export const AuthController = {
       }
     }
   },
+
+  async signOut(req: Request, res: Response) {
+    try {
+      await AuthService.signOut();
+      res.status(200).json({ message: "Successfully signed out." });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        res
+          .status(500)
+          .json({ error: "An unexpected error occurred during sign out." });
+      }
+    }
+  },
 };

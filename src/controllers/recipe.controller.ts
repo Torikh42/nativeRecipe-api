@@ -23,11 +23,10 @@ export const RecipeController = {
         throw new AppError("Authentication error, user not found.", 401);
       }
 
-      console.log("User ID from backend:", req.user.id);
-
       const recipeData = {
         ...req.body,
-        owner_id: req.user.id, // Menggunakan ID dari user yang terotentikasi
+        owner_id: req.user.id,
+        image_url: req.file ? req.file.path : undefined,
       };
 
       const newRecipe = await RecipeService.create(recipeData);
@@ -39,6 +38,6 @@ export const RecipeController = {
       } else {
         res.status(500).json({ error: "An unexpected error occurred." });
       }
-    } 
+    }
   },
 };

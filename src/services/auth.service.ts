@@ -57,4 +57,15 @@ export const AuthService = {
     console.log("Supabase sign-in successful. Data:", data); // Log 3: Log the entire data object
     return data;
   },
+
+  async signOut() {
+    console.log("Attempting Supabase sign-out");
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Supabase sign-out error:", error.message);
+      throw new AppError(error.message, 500);
+    }
+    console.log("Supabase sign-out successful");
+  },
 };
