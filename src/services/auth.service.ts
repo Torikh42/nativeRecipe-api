@@ -16,45 +16,36 @@ export const AuthService = {
     }
     console.log("Supabase signup successful. User data:", data.user);
 
-    // Remove redirectTo from the response if it exists, as it's not needed for mobile app
-    if (data.session && data.session.user && (data.session as any).redirectTo) {
-      delete (data.session as any).redirectTo;
-    }
-
-    // Jika pendaftaran berhasil, buat entri di tabel 'User' kustom
     if (data.user) {
       const { error: profileError } = await supabase.from("User").insert({
-        id: data.user.id, // Gunakan ID dari Supabase Auth
-        email: data.user.email, // Simpan email juga
-        created_at: new Date().toISOString(), // Simpan tanggal pembuatan
+        id: data.user.id, 
+        email: data.user.email,
+        full_name: credentials.fullName, 
       });
 
       if (profileError) {
-        // Log error tetapi jangan hentikan pendaftaran utama
-        console.error("Error creating user profile:", profileError.message)
+        console.error("Error creating user profile:", profileError.message);
+        throw new AppError("Could not create user profile.", 500);
       } else {
         console.log("User profile created successfully for:", data.user.email);
-      } 
-    } else {
-      console.log("No user data returned");
-
+      }
     }
 
     return data;
   },
 
   async signIn(credentials: AuthCredentials) {
-    console.log("Attempting Supabase sign-in for:", credentials.email); // Log 1
+    console.log("Attempting Supabase sign-in for:", credentials.email); 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: credentials.email,
       password: credentials.password,
     });
 
     if (error) {
-      console.error("Supabase sign-in error:", error); // Log 2: Log the entire error object
-      throw new AppError(error.message, 401); // 401 Unauthorized
+      console.error("Supabase sign-in error:", error); 
+      throw new AppError(error.message, 401); 
     }
-    console.log("Supabase sign-in successful. Data:", data); // Log 3: Log the entire data object
+    console.log("Supabase sign-in successful. Data:", data); 
     return data;
   },
 

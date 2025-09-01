@@ -5,12 +5,12 @@ import { AppError } from "../utils/errors";
 export const AuthController = {
   async signUp(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
-      if (!email || !password) {
-        throw new AppError("Email and password are required", 400);
+      const { email, password, fullName } = req.body;
+      if (!email || !password || !fullName) {
+        throw new AppError("Email, password, and full name are required", 400);
       }
 
-      const data = await AuthService.signUp({ email, password });
+      const data = await AuthService.signUp({ email, password, fullName });
       res.status(201).json(data);
     } catch (error) {
       if (error instanceof AppError) {
@@ -24,7 +24,7 @@ export const AuthController = {
   },
 
   async signIn(req: Request, res: Response) {
-    console.log("Inside AuthController.signIn"); // New log
+    console.log("Inside AuthController.signIn"); 
     try {
       const { email, password } = req.body;
       if (!email || !password) {

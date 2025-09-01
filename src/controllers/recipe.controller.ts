@@ -22,9 +22,10 @@ export const RecipeController = {
       if (!req.user) {
         throw new AppError("Authentication error, user not found.", 401);
       }
+      const body = JSON.parse(req.body.data);
 
       const recipeData = {
-        ...req.body,
+        ...body,
         owner_id: req.user.id,
         image_url: req.file ? req.file.path : undefined,
       };
@@ -33,6 +34,24 @@ export const RecipeController = {
       res.status(201).json(newRecipe);
     } catch (error) {
       console.error("Error in createRecipe:", error);
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "An unexpected error occurred." });
+      }
+    }
+  },
+
+  async getRecipeById(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        throw new AppError("Recipe ID is required.", 400);
+      }
+      const recipe = await RecipeService.getById(id);
+      res.status(200).json(recipe);
+    } catch (error) {
+      console.error("Error in getRecipeById:", error);
       if (error instanceof AppError) {
         res.status(error.statusCode).json({ error: error.message });
       } else {

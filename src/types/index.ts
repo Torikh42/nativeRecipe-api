@@ -1,3 +1,8 @@
+export interface UserProfile {
+  full_name: string;
+  email: string;
+}
+
 export interface Recipe {
   id: number;
   created_at: string;
@@ -6,6 +11,7 @@ export interface Recipe {
   description: string;
   instructions: string;
   image_url?: string;
+  User?: UserProfile; 
 }
 
 export interface Ingredient {
@@ -19,4 +25,5 @@ export interface Ingredient {
 export interface AuthCredentials {
   email: string;
   password: string;
+  fullName?: string; 
 }
