@@ -59,4 +59,22 @@ export const RecipeController = {
       }
     }
   },
+
+  async getMyRecipes(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        throw new AppError("Authentication error, user not found.", 401);
+      }
+      const userId = req.user.id;
+      const recipes = await RecipeService.getMyRecipes(userId);
+      res.status(200).json(recipes);
+    } catch (error) {
+      console.error("Error in getMyRecipes:", error);
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "An unexpected error occurred." });
+      }
+    }
+  },
 };

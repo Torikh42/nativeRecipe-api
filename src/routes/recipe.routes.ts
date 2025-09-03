@@ -6,6 +6,7 @@ import { upload } from "../config/cloudinary";
 const router = Router();
 
 router.get("/", RecipeController.getAllRecipes);
+router.get("/mine", authMiddleware, RecipeController.getMyRecipes);
 router.get("/:id", RecipeController.getRecipeById);
 router.post(
   "/",

@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase } from "../config/supabase";
+import jwt from "jsonwebtoken";
 import { AppError } from "../utils/errors";
+
+interface UserPayload {
+  id: string;
+  email: string;
+}
 
 export const authMiddleware = async (
   req: Request,
@@ -14,25 +19,24 @@ export const authMiddleware = async (
     }
 
     const token = authHeader.split(" ")[1];
-    const { data, error } = await supabase.auth.getUser(token);
+    const jwtSecret = process.env.JWT_SECRET;
 
-    if (error || !data.user) {
-      throw new AppError("Invalid or expired token", 401);
+    if (!jwtSecret) {
+      throw new AppError("JWT secret is not configured on the server.", 500);
     }
-
-    // Menambahkan objek user ke dalam request agar bisa diakses oleh controller
-    req.user = data.user;
+    const decoded = jwt.verify(token, jwtSecret) as UserPayload;
+    req.user = decoded as any;
 
     next();
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({ error: "Invalid or expired token." });
+    } else if (error instanceof AppError) {
       res.status(error.statusCode).json({ error: error.message });
     } else {
-      res
-        .status(500)
-        .json({
-          error: "An unexpected error occurred in authentication middleware.",
-        });
+      res.status(500).json({
+        error: "An unexpected error occurred in authentication middleware.",
+      });
     }
   }
 };

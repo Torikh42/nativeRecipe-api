@@ -76,4 +76,18 @@ export const RecipeService = {
 
     return data as Recipe & { ingredients: Ingredient[] };
   },
+
+  async getMyRecipes(userId: string): Promise<Recipe[]> {
+    const { data, error } = await supabase
+      .from("Recipe")
+      .select("*")
+      .eq("owner_id", userId);
+
+    if (error) {
+      console.error(`Error fetching recipes for user ${userId}:`, error);
+      throw new AppError("Failed to fetch user's recipes.", 500);
+    }
+
+    return data || [];
+  },
 };
