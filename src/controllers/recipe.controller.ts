@@ -77,4 +77,51 @@ export const RecipeController = {
       }
     }
   },
+
+  async updateRecipe(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        throw new AppError("Authentication error, user not found.", 401);
+      }
+      const { id } = req.params;
+      const body = JSON.parse(req.body.data);
+
+      const recipeData = {
+        ...body,
+        image_url: req.file ? req.file.path : body.image_url,
+      };
+
+      const updatedRecipe = await RecipeService.update(
+        id,
+        req.user.id,
+        recipeData
+      );
+      res.status(200).json(updatedRecipe);
+    } catch (error) {
+      console.error("Error in updateRecipe:", error);
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "An unexpected error occurred." });
+      }
+    }
+  },
+
+  async deleteRecipe(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        throw new AppError("Authentication error, user not found.", 401);
+      }
+      const { id } = req.params;
+      const result = await RecipeService.delete(id, req.user.id);
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Error in deleteRecipe:", error);
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "An unexpected error occurred." });
+      }
+    }
+  },
 };

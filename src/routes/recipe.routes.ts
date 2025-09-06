@@ -15,4 +15,13 @@ router.post(
   RecipeController.createRecipe
 );
 
+router.put(
+  "/:id",
+  authMiddleware,
+  upload.single("image"),
+  RecipeController.updateRecipe
+);
+
+router.delete("/:id", authMiddleware, RecipeController.deleteRecipe);
+
 export default router;
