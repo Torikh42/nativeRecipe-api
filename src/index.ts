@@ -5,6 +5,7 @@ import cors from "cors";
 import morgan from "morgan";
 import recipeRoutes from "./routes/recipe.routes";
 import authRoutes from "./routes/auth.routes";
+import aiRoutes from "./routes/ai.routes";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -19,8 +20,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/recipes", recipeRoutes);
-
 app.use("/api/auth", authRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
