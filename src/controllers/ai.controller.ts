@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { generateRecipe } from "../services/ai.service";
+import { generateRecipe, identifyFoodFromImage } from "../services/ai.service";
 
 export const createRecipeFromIngredients = async (req: Request, res: Response) => {
   try {
@@ -10,6 +10,22 @@ export const createRecipeFromIngredients = async (req: Request, res: Response) =
     }
 
     const recipe = await generateRecipe(ingredients);
+    res.json(recipe);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: message });
+  }
+};
+
+export const identifyFood = async (req: Request, res: Response) => {
+  try {
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(400).json({ error: "Please provide an image (base64)." });
+    }
+
+    const recipe = await identifyFoodFromImage(image);
     res.json(recipe);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
