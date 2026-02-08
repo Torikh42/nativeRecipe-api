@@ -12,9 +12,12 @@ export const RecipeService = {
   async getAll(): Promise<Recipe[]> {
     const { data, error } = await supabase
       .from("Recipe")
-      .select("*, User(full_name, email)");
+      .select("id, title, description, instructions, image_url, created_at, owner_id, User(full_name, email)");
     if (error) throw new AppError(error.message, 500);
-    return data || [];
+    return (data as any[] || []).map(recipe => ({
+      ...recipe,
+      User: Array.isArray(recipe.User) ? recipe.User[0] : recipe.User
+    })) as Recipe[];
   },
 
   /**
@@ -65,7 +68,7 @@ export const RecipeService = {
   async getById(id: string): Promise<Recipe & { ingredients: Ingredient[] }> {
     const { data, error } = await supabase
       .from("Recipe")
-      .select("*, ingredients:Ingredients(*), User(full_name, email)")
+      .select("id, title, description, instructions, image_url, created_at, owner_id, ingredients:Ingredients(*), User(full_name, email)")
       .eq("id", id)
       .single();
 
@@ -74,13 +77,17 @@ export const RecipeService = {
       throw new AppError(`Recipe with id ${id} not found.`, 404);
     }
 
-    return data as Recipe & { ingredients: Ingredient[] };
+    const recipe = data as any;
+    return {
+      ...recipe,
+      User: Array.isArray(recipe.User) ? recipe.User[0] : recipe.User
+    } as Recipe & { ingredients: Ingredient[] };
   },
 
   async getMyRecipes(userId: string): Promise<Recipe[]> {
     const { data, error } = await supabase
       .from("Recipe")
-      .select("*")
+      .select("id, title, description, instructions, image_url, created_at, owner_id")
       .eq("owner_id", userId);
 
     if (error) {
@@ -88,7 +95,7 @@ export const RecipeService = {
       throw new AppError("Failed to fetch user's recipes.", 500);
     }
 
-    return data || [];
+    return data as Recipe[] || [];
   },
 
   async update(
@@ -112,53 +119,34 @@ export const RecipeService = {
       throw new AppError("You are not authorized to update this recipe.", 403);
     }
 
-    const { data: updatedRecipe, error: updateError } = await supabase
-      .from("Recipe")
-      .update(recipeData)
-      .eq("id", id)
-      .select()
-      .single();
+    const updatePromises: Promise<any>[] = [
+      Promise.resolve(supabase.from("Recipe").update(recipeData).eq("id", id).select().single())
+    ];
 
-    if (updateError) {
-      throw new AppError(
-        `Failed to update recipe: ${updateError.message}`,
-        500
+    if (ingredients) {
+      updatePromises.push(
+        Promise.resolve(
+          supabase.from("Ingredients").delete().match({ recipe_id: id }).then(async (deleteRes) => {
+            if (deleteRes.error) throw deleteRes.error;
+            if (ingredients.length > 0) {
+              const ingredientsToInsert = ingredients.map((ing) => ({ ...ing, recipe_id: id }));
+              const insertRes = await supabase.from("Ingredients").insert(ingredientsToInsert);
+              if (insertRes.error) throw insertRes.error;
+            }
+            return deleteRes;
+          })
+        )
       );
     }
 
-    if (ingredients) {
-      const { error: deleteIngredientsError } = await supabase
-        .from("Ingredients")
-        .delete()
-        .match({ recipe_id: id });
+    const results = await Promise.all(updatePromises);
+    const recipeResult = results[0];
 
-      if (deleteIngredientsError) {
-        throw new AppError(
-          `Failed to update ingredients: ${deleteIngredientsError.message}`,
-          500
-        );
-      }
-
-      if (ingredients.length > 0) {
-        const ingredientsToInsert = ingredients.map((ingredient) => ({
-          ...ingredient,
-          recipe_id: id,
-        }));
-
-        const { error: ingredientsError } = await supabase
-          .from("Ingredients")
-          .insert(ingredientsToInsert);
-
-        if (ingredientsError) {
-          throw new AppError(
-            `Failed to add ingredients: ${ingredientsError.message}`,
-            500
-          );
-        }
-      }
+    if (recipeResult.error) {
+      throw new AppError(`Failed to update recipe: ${recipeResult.error.message}`, 500);
     }
 
-    return updatedRecipe;
+    return recipeResult.data;
   },
 
   async delete(id: string, userId: string): Promise<{ message: string }> {
