@@ -1,10 +1,9 @@
-import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject, streamObject } from "ai";
 import { z } from "zod";
 
-const openrouter = createOpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 });
 
 const RecipeSchema = z.object({
@@ -24,7 +23,7 @@ export type AiRecipeResponse = z.infer<typeof RecipeSchema>;
 export const generateRecipe = async (ingredients: string[]): Promise<AiRecipeResponse> => {
   try {
     const { object } = await generateObject({
-      model: openrouter("google/gemini-2.0-flash-001"),
+      model: google("gemini-2.0-flash-001"),
       schema: RecipeSchema,
       system: "You are a professional chef. Use Indonesian language (Bahasa Indonesia).",
       prompt: `Create a delicious recipe using the following ingredients: ${ingredients.join(", ")}. You can add basic pantry items (salt, pepper, oil, water, etc.) if needed.`,
@@ -39,7 +38,7 @@ export const generateRecipe = async (ingredients: string[]): Promise<AiRecipeRes
 
 export const streamRecipe = async (ingredients: string[]) => {
   return streamObject({
-    model: openrouter("google/gemini-2.0-flash-001"),
+    model: google("gemini-2.0-flash-001"),
     schema: RecipeSchema,
     system: "You are a professional chef. Use Indonesian language (Bahasa Indonesia).",
     prompt: `Create a delicious recipe using the following ingredients: ${ingredients.join(", ")}. You can add basic pantry items (salt, pepper, oil, water, etc.) if needed.`,
@@ -51,7 +50,7 @@ export const identifyFoodFromImage = async (imageBase64: string): Promise<AiReci
     const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, "");
 
     const { object } = await generateObject({
-      model: openrouter("google/gemini-2.0-flash-001"),
+      model: google("gemini-2.0-flash-001"),
       schema: RecipeSchema,
       system: "You are a professional chef. Use Indonesian language (Bahasa Indonesia).",
       messages: [
@@ -75,7 +74,7 @@ export const identifyFoodFromImage = async (imageBase64: string): Promise<AiReci
 export const streamIdentifyFoodFromImage = async (imageBase64: string) => {
   const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, "");
   return streamObject({
-    model: openrouter("google/gemini-2.0-flash-001"),
+    model: google("gemini-2.0-flash-001"),
     schema: RecipeSchema,
     system: "You are a professional chef. Use Indonesian language (Bahasa Indonesia).",
     messages: [
@@ -89,5 +88,6 @@ export const streamIdentifyFoodFromImage = async (imageBase64: string) => {
     ],
   });
 };
+
 
 
