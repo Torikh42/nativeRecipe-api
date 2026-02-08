@@ -118,9 +118,8 @@ export const identifyFoodFromImage = async (imageBase64: string): Promise<AiReci
 
   try {
     const models = [
-      // "arcee-ai/trinity-mini:free",
-      // "openai/gpt-oss-120b:free",
-      "openai/gpt-4o-mini",
+      "google/gemini-2.0-flash-001",
+      // "openai/gpt-4o-mini",
     ];
 
     let lastError: any;
