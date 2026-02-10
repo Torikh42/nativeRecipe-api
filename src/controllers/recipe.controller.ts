@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { RecipeService } from "../services/recipe.service";
 import { AppError } from "../utils/errors";
+import { getPublicUrl } from "../utils/storage";
 
 export const RecipeController = {
   async getAllRecipes(req: Request, res: Response) {
@@ -27,7 +28,7 @@ export const RecipeController = {
       const recipeData = {
         ...body,
         owner_id: req.user.id,
-        image_url: req.file ? req.file.path : undefined,
+        image_url: req.file ? getPublicUrl(req.file) : undefined,
       };
 
       const newRecipe = await RecipeService.create(recipeData);
@@ -88,7 +89,7 @@ export const RecipeController = {
 
       const recipeData = {
         ...body,
-        image_url: req.file ? req.file.path : body.image_url,
+        image_url: req.file ? getPublicUrl(req.file) : body.image_url,
       };
 
       const updatedRecipe = await RecipeService.update(
@@ -106,6 +107,7 @@ export const RecipeController = {
       }
     }
   },
+
 
   async deleteRecipe(req: Request, res: Response) {
     try {

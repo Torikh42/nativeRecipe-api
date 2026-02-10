@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { RecipeController } from "../controllers/recipe.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { upload } from "../config/cloudinary";
+import { uploadStorage } from "../utils/storage";
 
 const router = Router();
 
@@ -11,14 +11,14 @@ router.get("/:id", RecipeController.getRecipeById);
 router.post(
   "/",
   authMiddleware,
-  upload.single("image"),
+  uploadStorage.single("image"),
   RecipeController.createRecipe
 );
 
 router.put(
   "/:id",
   authMiddleware,
-  upload.single("image"),
+  uploadStorage.single("image"),
   RecipeController.updateRecipe
 );
 

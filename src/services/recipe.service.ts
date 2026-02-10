@@ -1,6 +1,7 @@
 import { AppError } from "../utils/errors";
 import { supabase } from "../config/supabase";
 import { Ingredient, Recipe } from "../types";
+import { deleteFromStorage } from "../utils/storage";
 
 type IngredientInput = Omit<Ingredient, "id" | "created_at" | "recipe_id">;
 
@@ -152,7 +153,7 @@ export const RecipeService = {
   async delete(id: string, userId: string): Promise<{ message: string }> {
     const { data: existingRecipe, error: fetchError } = await supabase
       .from("Recipe")
-      .select("owner_id")
+      .select("owner_id, image_url")
       .eq("id", id)
       .single();
 
@@ -162,6 +163,11 @@ export const RecipeService = {
 
     if (existingRecipe.owner_id !== userId) {
       throw new AppError("You are not authorized to delete this recipe.", 403);
+    }
+
+    // Delete image from R2 using the helper function
+    if (existingRecipe.image_url) {
+      await deleteFromStorage(existingRecipe.image_url);
     }
 
     const { error: deleteIngredientsError } = await supabase
