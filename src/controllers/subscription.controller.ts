@@ -37,15 +37,14 @@ export class SubscriptionController {
 
       if (!userEmail || !userName) {
         const { data: userData } = await supabase
-          .from("users")
-          .select("email, full_name, phone")
+          .from("User")
+          .select("email, full_name")
           .eq("id", userId)
           .single();
 
         if (userData) {
           userEmail = userEmail || userData.email;
           userName = userName || userData.full_name;
-          userPhone = userPhone || userData.phone;
         }
       }
 
@@ -241,7 +240,7 @@ export class SubscriptionController {
   async getPlans(req: Request, res: Response): Promise<void> {
     try {
       const monthlyPrice = parseInt(process.env.SUBSCRIPTION_MONTHLY_PRICE || "29000");
-      const yearlyPrice = parseInt(process.env.SUBSCRIPTION_YEARLY_PRICE || "290000");
+      const yearlyPrice = parseInt(process.env.SUBSCRIPTION_YEARLY_PRICE || "1000000");
 
       res.status(200).json({
         success: true,

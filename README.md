@@ -69,7 +69,7 @@ This is the TypeScript backend for the NativeRecipe application, providing high-
 
     # Subscription Plans (in IDR)
     SUBSCRIPTION_MONTHLY_PRICE=29000
-    SUBSCRIPTION_YEARLY_PRICE=290000
+    SUBSCRIPTION_YEARLY_PRICE=1000000
     ```
 
 4.  **Database Migration**: Run the SQL migration in Supabase:

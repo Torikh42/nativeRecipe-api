@@ -23,7 +23,7 @@ export interface SubscriptionResponse {
 
 export class SubscriptionService {
   private monthlyPrice = parseInt(process.env.SUBSCRIPTION_MONTHLY_PRICE || "29000");
-  private yearlyPrice = parseInt(process.env.SUBSCRIPTION_YEARLY_PRICE || "290000");
+  private yearlyPrice = parseInt(process.env.SUBSCRIPTION_YEARLY_PRICE || "1000000");
 
   /**
    * Create a new subscription and get payment token
@@ -91,12 +91,12 @@ export class SubscriptionService {
     };
 
     try {
-      const snapResponse = await snap.createTransaction(parameter);
+      const snapResponse = await snap.createTransaction(parameter) as any;
       
       return {
         orderId,
         snapToken: snapResponse.token,
-        redirectUrl: snapResponse.redirect,
+        redirectUrl: snapResponse.redirect_url,
         price,
         planType,
       };
